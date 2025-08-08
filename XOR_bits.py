@@ -36,6 +36,8 @@ print(f"XOR result: {xor_bytearrays(file_in.buff).hex()}")  # Output: bytearray(
 """ WORKING """
 
 
+
+
     
 
 
