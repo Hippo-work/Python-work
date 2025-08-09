@@ -6,4 +6,11 @@ Python programming learning
     Create Binary File              "Working"
     file_in                         "Working"
     Invert_bits                     "Working"
-    bit_delta                          "Not Working"
+    bit_delta                       "Not Working"
+
+
+Waveform
+    Installed modules
+        pip install scipy
+        pip install numpy
+        pip install matplotlib
