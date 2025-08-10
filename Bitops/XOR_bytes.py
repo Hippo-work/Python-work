@@ -2,9 +2,9 @@ import file_in
 import os
 import sys
 
-def xor_file_fixed_value(*contents):
+def xor_fixed_value(*contents):
     for content in contents:
-        xor_content = bytes(b ^ 0xFF for b in content)
+        xor_content = bytes(b ^ hex(input()) for b in content)
    # print(f"input content:    {input_content.hex()} Binary: {' '.join(f'{byte:08b}' for byte in input_content)}")  # Print the first 10 bytes of the input content
     print(f"XOR content:      {xor_content.hex()} Binary: {' '.join(f'{byte:08b}' for byte in xor_content)} bytes ")  # Print the first byte of the inverted content
 
@@ -13,6 +13,7 @@ def xor_bytearrays(buffers):
     XORs a list of bytearrays together, padding shorter ones with zeros.
     Returns a new bytearray with the result.
     """
+    print("--xor_bytearrays--")
     max_len = max(len(buf) for buf in buffers)
     # Pad each buffer to max_len with zeros
     padded = [buf + bytearray(max_len - len(buf)) for buf in buffers]
@@ -31,7 +32,7 @@ def xor_bytearrays(buffers):
 #result = xor_bytearrays([buf1, buf2, buf3])
 #print(result)  # Output: bytearray(b'\x01\x00\x01\x01')
 
-print(f"XOR result: {xor_bytearrays(file_in.input).hex()}")  # Output: bytearray(b'\x0c\x0d\x0d\x04')
+print(f"XOR result: {xor_fixed_value(file_in.input).hex()}")  # Output: bytearray(b'\x0c\x0d\x0d\x04')
 """ WORKING """
 
 

@@ -33,9 +33,9 @@ def multi_file_input(*file_paths):
         return buffers
 
 
-input = multi_file_input('a.bit', 'b.bit', 'c.bit')
+input = multi_file_input('Bitops/a.bit', 'Bitops/b.bit', 'Bitops/c.bit')
 
-
+print("--file_in--")
 for i, buffer in enumerate(input):
     print(f"Buffer {i+1}: {buffer.hex()}")  # Print the hex representation of each buffer
 
