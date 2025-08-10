@@ -7,7 +7,7 @@ def xor_bits(bytearrays):
     """ It was too hard to XOR bytes, so we unpack, XOR and repack bits instead, see how this goes"""
 
     # get user input for XOR value
-    user_input = input("Enter a value to XOR with the data; 0xHEX or 0bBINARY:")
+    user_input = input("Enter a value to XOR with the data; 0xHEX or 0bBINARY: ")
 
     while True:
 		# Check for hex (e.g., 0x1A or 0X1A)
@@ -26,14 +26,20 @@ def xor_bits(bytearrays):
             return print("Invalid input. Please enter a valid hexadecimal or binary number.")
         
     user_input = bytearray(user_input.to_bytes(max(1, user_input.bit_length() // 8), byteorder='little'))
-    read_bits.unpack_bits(user_input[0])
-    print(user_input)
+    user_unpacked = read_bits.unpack_bits(user_input)
+    # pad the bytearrays to the length of the longest one
+    while len(user_unpacked) <= len(bytearrays):
+        user_unpacked.append(0)
+    else: 
+        bytearrays.append(0)
+
+    print(user_unpacked)
     print(type(user_input))
-    deltas = []
+    xor = []
     for i in range(0, len(bytearrays)):
-        delta = bytearrays[i] ^ user_input[i]
-        deltas.append(delta)
-    return deltas
+        xor_bits = bytearrays[i] ^ user_unpacked[i]
+        xor.append(xor_bits)
+    return xor
 
 if __name__ == "__main__":
     result = xor_bits(read_bits.unpack_bits(file_in.input[0]))
