@@ -10,7 +10,12 @@ Python programming learning
 
 
 Waveform
+    built with ai
     Installed modules
         pip install scipy
         pip install numpy
         pip install matplotlib
+
+
+read bits should be in file_in
+setup user input with asking what function and what data

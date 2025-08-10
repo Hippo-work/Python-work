@@ -1,6 +1,4 @@
 import file_in
-import os
-import sys 
 
 def unpack_bits(byte_arr):
     print("--unpack_bits--")
@@ -23,7 +21,7 @@ def unpack_bits(byte_arr):
 #test the unpack_bits function
 if __name__ == "__main__":
     #buf = bytearray([0b10101010, 0b1, 0xff])
-    buf = file_in.input[1] # Assuming buff is a list of bytearrays
+    buf = file_in.input[1]# Assuming buff is a list of bytearrays
     bit_out = unpack_bits(buf)
     print(bit_out)
 

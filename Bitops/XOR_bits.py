@@ -1,0 +1,46 @@
+import file_in
+import re
+import read_bits
+
+def xor_bits(bytearrays):
+    print("--xor_bits--")
+    """ It was too hard to XOR bytes, so we unpack, XOR and repack bits instead, see how this goes"""
+
+    # get user input for XOR value
+    user_input = input("Enter a value to XOR with the data; 0xHEX or 0bBINARY:")
+
+    while True:
+		# Check for hex (e.g., 0x1A or 0X1A)
+        is_hex = re.fullmatch(r"0[xX][0-9a-fA-F]+", user_input) is not None
+
+		# Check for binary (e.g., 0b1010 or 0B1010)
+        is_bin = re.fullmatch(r"0[bB][01]+", user_input) is not None
+
+        user_input = int(user_input, 0)  # base 0 allows hex, decimal, and binary inputs0b0
+        """ it seems too hard to xor bytes, so will unpack and repack bits"""
+        if is_hex:
+            break
+        elif is_bin:
+            break
+        else:
+            return print("Invalid input. Please enter a valid hexadecimal or binary number.")
+        
+    user_input = bytearray(user_input.to_bytes(max(1, user_input.bit_length() // 8), byteorder='little'))
+    read_bits.unpack_bits(user_input[0])
+    print(user_input)
+    print(type(user_input))
+    deltas = []
+    for i in range(0, len(bytearrays)):
+        delta = bytearrays[i] ^ user_input[i]
+        deltas.append(delta)
+    return deltas
+
+if __name__ == "__main__":
+    result = xor_bits(read_bits.unpack_bits(file_in.input[0]))
+    print(f"Delta bit list:  {result}")
+    print(f"Delta repacked: {read_bits.pack_bits(result).hex()}")
+
+# #Test
+# if __name__ == "__main__":
+# 	print(f"XOR result: {xor_bits(file_in.input)}")  
+# 	""" NOT WORKING """
