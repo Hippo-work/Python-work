@@ -25,3 +25,22 @@ def compute_dft(waveform):
     dft = np.fft.fft(waveform)
     freq = np.fft.fftfreq(N, d=1.0/1000)
     return freq[:N//2], np.abs(dft)[:N//2]
+
+def generate_fsk_waveform(data, fs=1000, f0=100, f1=200, bit_duration=0.1):
+    """
+    Generate FSK-modulated waveform from binary data.
+    :param data: List or array of 0s and 1s
+    :param fs: Sampling frequency
+    :param f0: Frequency for bit 0
+    :param f1: Frequency for bit 1
+    :param bit_duration: Duration of each bit in seconds
+    :return: time array, waveform array
+    """
+    t = np.arange(0, bit_duration * len(data), 1/fs)
+    waveform = np.zeros_like(t)
+    for i, bit in enumerate(data):
+        freq = f1 if bit else f0
+        idx_start = int(i * bit_duration * fs)
+        idx_end = int((i + 1) * bit_duration * fs)
+        waveform[idx_start:idx_end] = np.cos(2 * np.pi * freq * t[idx_start:idx_end])
+    return t, waveform

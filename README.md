@@ -15,6 +15,7 @@ Waveform
         pip install scipy
         pip install numpy
         pip install matplotlib
+        pip install mayavi --no-cache-dir --verbose  --no-build-isolation
 
 
 read bits should be in file_in
