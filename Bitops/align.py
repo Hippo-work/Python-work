@@ -1,18 +1,18 @@
 import re
 
-def left_align_to_bytes_string(value_str: str) -> bytes:
+def left_align_hexbin_string_to_bytearray(value_str: str) -> bytearray:
     """
     Takes a string 
-    representing an integer in hex (0x...), binary (0b...), or decimal,
+    representing an integer in hex (0x...), binary (0b...), or decimal(weird),
     and returns a bytearray
-    object with left-aligned bits (right-padded if needed).
+    With left-aligned bits (right-padded if needed).
     
     Example:
         '0xFFF' -> b'\xff\xf0'
         '0b1010' -> b'\xa0'
         '255' -> b'\xff'
     """
-    value_str = value_str.strip().lower()
+    value_str = value_str.strip().lower() #takes away start spaces, and puts text lowercase
 
     
     # Check for hex (e.g., 0x1A or 0X1A)
@@ -30,7 +30,7 @@ def left_align_to_bytes_string(value_str: str) -> bytes:
             # Pad to full bytes (2 hex digits per byte)
             if len(hex_str) % 2 != 0:
                 hex_str += '0'
-            return bytes.fromhex(hex_str)
+            return bytearray.fromhex(hex_str)
 
     # BIN MODE
     elif is_bin == True:
@@ -39,7 +39,7 @@ def left_align_to_bytes_string(value_str: str) -> bytes:
             #pad to byte boundary
             if len(bin_str) % 8 != 0:
                 bin_str += '0' * (8 - len(bin_str) % 8)
-            return int(bin_str, 2).to_bytes(len(bin_str) // 8, 'big')
+            return bytearray(int(bin_str, 2).to_bytes(len(bin_str) // 8, 'big'))
 
     # DECIMAL MODE (assume binary-style padding)
     else:
@@ -48,7 +48,7 @@ def left_align_to_bytes_string(value_str: str) -> bytes:
         bin_str = bin(value)[2:]
         if len(bin_str) % 8 != 0:
             bin_str += '0' * (8 - len(bin_str) % 8)
-        return int(bin_str, 2).to_bytes(len(bin_str) // 8, 'big')
+        return bytearray(int(bin_str, 2).to_bytes(len(bin_str) // 8, 'big'))
 
 if __name__ == "__main__":
-    print(bytearray(left_align_to_bytes_string(input())))   # b'\xff\xf0'
+    print(left_align_hexbin_string_to_bytearray(input("\nEnter in format 0xHex or 0bBinary: ")))   # b'\xff\xf0'

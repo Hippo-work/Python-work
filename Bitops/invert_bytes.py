@@ -4,11 +4,13 @@ import sys
 
 def invert_bytearrays(buffers):
     """
-    XORs a list of bytearrays together, can be single or multiple files.
+    Takes data, can be single or multiple files.
+    Inverts bits
     Padding shorter ones with zeros.
     Inverts
     Returns a new bytearray with the result.
     """
+
     max_len = max(len(buf) for buf in buffers)
     # Pad each buffer to max_len with zeros
     padded = [buf + bytearray(max_len - len(buf)) for buf in buffers]

@@ -1,6 +1,6 @@
 import file_in
 
-def unpack_bits(byte_arr):
+def unpack_bits(byte_arr:bytearray) -> list:
     print("--unpack_bits--")
     print("Reading bits from byte array:")
     #create a list to hold the bits
@@ -21,12 +21,12 @@ def unpack_bits(byte_arr):
 #test the unpack_bits function
 if __name__ == "__main__":
     #buf = bytearray([0b10101010, 0b1, 0xff])
-    buf = file_in.input[1]# Assuming buff is a list of bytearrays
+    buf = file_in.input[0]# can only take 1 bytearray input per call
     bit_out = unpack_bits(buf)
     print(bit_out)
 
 
-def pack_bits(bits):
+def pack_bits(bits: list) -> bytearray:
     """Packs a list of bits into a bytearray."""
     print("--pack_bits--")
     packed = bytearray()

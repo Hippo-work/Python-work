@@ -38,7 +38,6 @@ def xor_byte_fixed_value(contents):
 		else:
 			return print("Invalid input. Please enter a valid hexadecimal or binary number.")
 
-	# Convert to bytes, padding with zeros if necessary
 	print(user_input.hex())
 	print(type(user_input))
 
