@@ -23,13 +23,15 @@ def LRS_generator(taps, length, initial_fill=1):
     #could fill in empty 0s between?? set every value to 1 or 0
     # if index of taps in the range of the full results is not 0 then make it 1:
     # else make it 0: would this work?
+    bin_rev_taps = []
     for t, rev_tap in enumerate(rev_taps):
         if rev_tap != 0:
-            rev_tap = 1
+            bin_rev_taps.append(1)
         else:
-            rev_tap = 0
-        print(rev_tap)
-    test = rev_taps[:-(len(taps)-1)] 
+            bin_rev_taps.append(0)
+    print(bin_rev_taps)
+    
+    test = rev_taps[:-(len(rev_taps)-1)]  #gives the first value in a list
     seq_result = []
     if initial_fill != 1:
         for t in rev_taps:
