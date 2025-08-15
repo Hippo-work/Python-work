@@ -20,7 +20,10 @@ def LRS_generator(taps, length, initial_fill=1):
     rev_taps = taps[::-1]
     rev_taps.append(0)
     print(rev_taps)
-    #could fill in empty 0s between?? set every value to 1 or 0
+    #after reverse taps
+    #make a new list the same length as the highest value in the taps
+    # compare lists and output a 1 if they match int values?
+    #using inner for
     # if index of taps in the range of the full results is not 0 then make it 1:
     # else make it 0: would this work?
     bin_rev_taps = []
@@ -31,7 +34,7 @@ def LRS_generator(taps, length, initial_fill=1):
             bin_rev_taps.append(0)
     print(bin_rev_taps)
     
-    test = rev_taps[:-(len(rev_taps)-1)]  #gives the first value in a list
+    # test = rev_taps[:-(len(rev_taps)-1)]  #gives the first value in a list
     seq_result = []
     if initial_fill != 1:
         for t in rev_taps:
