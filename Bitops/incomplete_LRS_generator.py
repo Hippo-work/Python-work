@@ -1,71 +1,25 @@
-"""
-Generate LRS from supplied tap points
-input tap points
-work with delimiters , and space
-check if its ordered weird, reorder numerically
-if no 0 at start do i append on or will it be fine
-run the function for a list of bits
-for a supplied length
-initial fill
-pack bits to bytes
-"""
-#2n-1 maximal length
+import matplotlib.pyplot as plt
 
+# Example: 4-bit maximal length LFSR
+def lfsr(seed:list, taps:list, length:int):
+    sr = seed.copy()
+    output = []
+    for _ in range(length):
+        feedback = 0
+        for t in taps:
+            feedback ^= sr[t]
+        output.append(sr[-1])
+        sr = [feedback] + sr[:-1]
+    return output
 
-def LRS_generator(taps, length, initial_fill=1):
-    #initial fill first bit is default 1 unless supplied
+seed = [1, 0]#seed length must = tap length #also must be binary to work
+taps = [0,1]  # x^4 + x + 1 ## seems the 0 tap is ommitted automatically
+length = (2**5 - 1) * 2
 
-    #init a list for the results
-    #need to reverse the list cos thats how the tap points work yeah
-    rev_taps = taps[::-1]
-    rev_taps.append(0)
-    print(rev_taps)
-    #after reverse taps
-    #make a new list the same length as the highest value in the taps
-    # compare lists and output a 1 if they match int values?
-    #using inner for
-    # if index of taps in the range of the full results is not 0 then make it 1:
-    # else make it 0: would this work?
-    bin_rev_taps = []
-    for t, rev_tap in enumerate(rev_taps):
-        if rev_tap != 0:
-            bin_rev_taps.append(1)
-        else:
-            bin_rev_taps.append(0)
-    print(bin_rev_taps)
-    
-    # test = rev_taps[:-(len(rev_taps)-1)]  #gives the first value in a list
-    seq_result = []
-    if initial_fill != 1:
-        for t in rev_taps:
-            seq_result.insert(t, 1)
-    elif initial_fill == 1:
-        seq_result = [initial_fill]
-    #pad fill the rest of the array to (length) of 0s
-    for i in range(length-1):
-        seq_result.append(0)
-    print(seq_result)
+sequence = lfsr(seed, taps, length)
+print(sequence)
+print(max(seed)) #gets the max int value in a list
+#need to modify it so that if no seed is input, it defaults to [1,0*(max(taps))]
 
-    #need to read the list from sequence and parse it
-    #start example for 4 1 0 (0 3 4)
-
-
-    i_len = len(taps)
-    for i in range(i_len):
-        x = 1
-
-    return i_len
-
-"""
-need to xor index i, index j and index k..
-insert? to index i
-increment through for length
-"""
-
-
-if __name__ == "__main__":
-    test = LRS_generator([0,2,3], 10)
-    print(test)
-
-
-
+test_len = [0 for t in len(max(taps))]
+print(test_len)
