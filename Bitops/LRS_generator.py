@@ -45,6 +45,7 @@ def safe_get(seq, index, default=None):
     else:
         return default
 
+end = time.time()
 if __name__ == "__main__":
     '''Pulls in user taps, length and initial fill(optional)'''
 
@@ -60,6 +61,6 @@ if __name__ == "__main__":
     print(sequence)
 
     '''Time'''
-    end = time.time()
+
     total_elapsed = end - start
     print(f"Elapsed time: {total_elapsed} sec")
