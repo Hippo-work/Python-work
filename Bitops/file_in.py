@@ -15,7 +15,7 @@ def multi_file_input(*file_paths):
         return buffers
 
 #when run from Python-work folder
-input = multi_file_input('Bitops/bitfiles/a.bit')
+input = multi_file_input('Bitops/bitfiles/d.bit')
 
 print("--file_in--")
 for i, buffer in enumerate(input):

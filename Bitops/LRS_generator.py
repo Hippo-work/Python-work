@@ -1,6 +1,9 @@
 import time
 start = time.time()
 import shlex
+import file_in
+import read_bits
+import numpy as np
 
 def lfsr_generator(taps:list, length:int, initial_fill=None):
     taps.sort()
@@ -13,10 +16,11 @@ def lfsr_generator(taps:list, length:int, initial_fill=None):
         fill = [int(f) for f in initial_fill]
         if max(fill) == 0:
             return "-:Error:- Initial of 0 gives infinite 0's"
-        if len(fill) > max(taps):
-            return "-:Error:- Initial fill of incorrect length, length must be less than or equal to largest tap number"
-        while len(fill) <= max(taps):
-            fill.append(0)
+        # if len(fill) > max(taps):
+        #     return "-:Error:- Initial fill of incorrect length, length must be less than or equal to largest tap number"
+        if len(fill) < max(taps):
+            while len(fill) <= max(taps):
+                fill.append(0)
     print(f"taps: {taps}")
     print(f"fill: {fill}")
     output = []
@@ -38,6 +42,18 @@ def get_LFSR(prompt, default=1, cast=list):
         safe.append(None)
     return safe[0], safe[1], safe[2]
 
+def LFSR_apply(data, taps, initial_fill=None):
+    mask = lfsr_generator(taps,len(data), initial_fill)
+    return np.bitwise_xor(data,mask)
+#might need to trim to data length 
+
+
+
+
+
+
+
+
 '''Allows default input'''
 def safe_get(seq, index, default=None):
     if -len(seq) <= index < len(seq):
@@ -47,20 +63,33 @@ def safe_get(seq, index, default=None):
 
 end = time.time()
 if __name__ == "__main__":
-    '''Pulls in user taps, length and initial fill(optional)'''
+    # '''Pulls in user taps, length and initial fill(optional)'''
 
-    prompt =    "Enter Taps(format 0,1,2,3), then length (output bits)," \
-                "then initial fill(optional): "
-    taps_user, length_user, initial_fill_user = get_LFSR(prompt)
-    length = int(length_user)
-    taps = [int(t) for t in taps_user.split(",")]
-    initial_fill = initial_fill_user
+    # prompt =    "Enter Taps(format 0,1,2,3), then length (output bits)," \
+    #             "then initial fill(optional): "
+    # taps_user, length_user, initial_fill_user = get_LFSR(prompt)
+    # length = int(length_user)
+    # taps = [int(t) for t in taps_user.split(",")]
+    # initial_fill = initial_fill_user
 
-    '''Run'''
-    sequence = lfsr_generator(taps, length, initial_fill)
-    print(sequence)
+    # '''Run'''
+    # # sequence = lfsr_generator(taps, length, initial_fill)
+    # # print(sequence)
 
     '''Time'''
 
     total_elapsed = end - start
     print(f"Elapsed time: {total_elapsed} sec")
+
+    test_bits = read_bits.unpack_bits(file_in.input[0])
+    test = LFSR_apply(test_bits,[0,1])
+    print(test)
+
+    import matplotlib.pyplot as plt
+
+    plt.figure(figsize=(10, 3))
+    plt.plot(test_bits, label='Original')
+    plt.plot(test, label='Scrambled', alpha=0.7)
+    plt.legend()
+    plt.title('LFSR Scrambling Effect')
+    plt.show()
