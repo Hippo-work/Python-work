@@ -1,0 +1,18 @@
+{
+    "Randomizer": [
+        "plugins.randomizer",
+        "LFSRRandomizer"
+    ],
+    "FEC": [
+        "plugins.fec",
+        "ReedSolomonDecoder"
+    ],
+    "Visualizer": [
+        "plugins.visualizer",
+        "BitstreamPlotter"
+    ],
+    "Unpack Bits": [
+        "st_Bitops.unpack_bits",
+        "Unpack_Bits"
+    ]
+}
