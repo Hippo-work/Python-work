@@ -9,7 +9,7 @@ sys.path.append(str(parent_dir))
 def load_plugins_from_json(json_path="plugins/plugins.json"):
     with open(json_path) as f:
         config = json.load(f)
-    st.write(config)
+    # st.write(config)
     plugins = {}
 
     for name, meta in config.items():
@@ -24,9 +24,20 @@ def load_plugins_from_json(json_path="plugins/plugins.json"):
     return plugins
 
 st.write("This pulls in a json dictionary that converts to a python class module" \
-"for a pointer to a python script, which is then ran")
+        " for a pointer to a python script, which is then ran "
+        "(turns static metadata into executable code):")
 
 plugins = load_plugins_from_json()
 st.write("Loaded plugin:", plugins.keys())
 
-plugins["Randomizer"].render(st.session_state)
+#loads all the plugins it finds
+#autodiscovery of added plugins
+for plug in plugins:
+    plugins[plug].render(st.session_state)
+
+#load individual
+# plugins["Randomizer"].render(st.session_state)
+
+
+#run the plugin
+# plugins["UnpackBits"].run(data)

@@ -20,10 +20,14 @@ def load_dict():
     else:
         return pd.DataFrame(columns=["Plugin", "Module", "Class"])
 
-def save_dict(df):
-    df["Plugin"] = df["Plugin"].astype(str)
-    df["Module"] = df["Module"].astype(str)
-    df["Class"] = df["Class"].astype(str)
-    data = dict(zip(df["Plugin"], zip(df["Module"], df["Class"])))
+def save_dict(df, filepath="my_dict.json"):
+    data = {
+        row["Plugin"]: {
+            "module": row["Module"],
+            "class": row["Class"]
+        }
+        for _, row in df.iterrows()
+    }
+    
     with open(DICT_FILE, "w") as f:
         json.dump(data, f, indent=4)
