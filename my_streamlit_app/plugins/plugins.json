@@ -1,18 +1,26 @@
 {
-    "Randomizer": {
-        "module": "plugins.randomizer",
-        "class": "LFSRRandomizer"
-    },
-    "FEC": {
-        "module": "plugins.fec",
-        "class": "ReedSolomonDecoder"
-    },
-    "Visualizer": {
-        "module": "plugins.visualizer",
-        "class": "BitstreamPlotter"
-    },
-    "UnpackBits": {
-        "module": "plugins.unpack_bits",
-        "class": "Unpack_Bits"
-    }
+  "Matplot_Test": {
+    "module": "plugins.matplot_test",
+    "class": "Matplot_Test"
+  },
+  "LFSRRandomizer": {
+    "module": "plugins.randomizer",
+    "class": "LFSRRandomizer"
+  },
+  "SubPageTest": {
+    "module": "plugins.sub_page_test",
+    "class": "SubPageTest"
+  },
+  "Test_save": {
+    "module": "plugins.test_save",
+    "class": "Test_save"
+  },
+  "Truncate_Bits": {
+    "module": "plugins.truncate_bits",
+    "class": "Truncate_Bits"
+  },
+  "Unpack_Bits": {
+    "module": "plugins.unpack_bits",
+    "class": "Unpack_Bits"
+  }
 }

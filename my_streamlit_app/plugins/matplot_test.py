@@ -11,10 +11,10 @@ sys.path.append(str(parent_dir))
 
 from plugins.plugin_base import Plugin
 
-class SecondTestPlugin(Plugin):
+class Matplot_Test(Plugin):
     def __init__(self):
-        self.name = "Second Test"
-        self.icon = "😊"
+        self.name = "Matplot Test"
+        self.icon = "📈"
         self.category = "DSP"
 
     def render(self, shared_state):

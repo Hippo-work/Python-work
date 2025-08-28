@@ -9,7 +9,7 @@ sys.path.append(str(parent_dir))
 
 from plugins.plugin_base import Plugin
 
-class RandomizerTool(Plugin):
+class SubPageTest(Plugin):
     def __init__(self):
         self.name = "Subpages"
         self.icon = "📄"

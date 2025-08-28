@@ -8,7 +8,7 @@ sys.path.append(str(parent_dir))
 
 DICT_FILE = "plugins/plugins.json"
 
-def load_dict():
+def load_dict(DICT_FILE="plugins/plugins.json"):
     if os.path.exists(DICT_FILE):
         with open(DICT_FILE, "r") as f:
             data = json.load(f)
@@ -20,7 +20,7 @@ def load_dict():
     else:
         return pd.DataFrame(columns=["Plugin", "Module", "Class"])
 
-def save_dict(df, filepath="my_dict.json"):
+def save_dict(df, filepath=DICT_FILE):
     data = {
         row["Plugin"]: {
             "module": row["Module"],
@@ -29,5 +29,21 @@ def save_dict(df, filepath="my_dict.json"):
         for _, row in df.iterrows()
     }
     
-    with open(DICT_FILE, "w") as f:
+    with open(filepath, "w") as f:
         json.dump(data, f, indent=4)
+
+def append_dict(df, filepath=DICT_FILE):
+    with open(filepath, "r") as f:
+        file = json.load(f)
+
+    data = {
+        row["Plugin"]: {
+            "module": row["Module"],
+            "class": row["Class"]
+        }
+        for _, row in df.iterrows()
+    }
+    file.update(data)
+
+    with open(filepath, "w") as f:
+        json.dump(file, f, indent=4)
