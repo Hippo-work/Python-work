@@ -37,21 +37,3 @@ class Unpack_Bits(Plugin):
             print()  # Newline after each byte
         print(f"Bit list: {bits}")
         return bits
-    
-    def pack_bits(bits: list) -> bytearray:
-        """Packs a list of bits into a bytearray."""
-        print("--pack_bits--")
-        packed = bytearray()
-        #pad the bits to make sure they are a multiple of 8
-        while len(bits) % 8 != 0:
-            bits.append(0)
-        #checks if bits are already a bytearray
-        if isinstance(bits, bytearray):
-            raise TypeError("Input must be a list of bits, not a bytearray.")
-        for i in range(0, len(bits), 8):
-            byte = 0
-            for j in range(8):
-                if i + j < len(bits):
-                    byte = (byte << 1) | bits[i + j]
-            packed.append(byte)
-        return packed

@@ -22,7 +22,20 @@ if "remove_confirm" not in st.session_state:
 
 # --- Load dictionary from file ---
 if "dict_df" not in st.session_state:
-    st.session_state.dict_df = load_dict()
+    with open("plugins/plugins.json", "r") as f:
+        data = json.load(f)
+        if data:
+            st.session_state.dict_df = load_dict("plugins/plugins.json")
+        else:
+            data = {
+                "Empty": {
+                    "module": "Empty",
+                    "class": "Empty"
+                }
+            }            
+            with open("plugins/plugins.json", "w") as f:
+                json.dump(data, f, indent=4)
+            st.rerun()
 
 #load blacklist
 if "black_dict_df" not in st.session_state:
@@ -51,7 +64,7 @@ with tab1:
     # page code here
 
     # --- Display and search ---
-    st.title("📖 Persistent Dictionary Editor")
+    st.title("📖 Sub Modules")
     search_term = st.text_input("🔍 Search dictionary", "")
 
     #sort
@@ -86,7 +99,7 @@ with tab2:
             blacklist = set()
 
         for filename in os.listdir("plugins"):
-            if filename.endswith(".py"):
+            if filename.endswith(".py"): #need to generic this for different types
                 module_name = filename[:-3]
                 path = os.path.join("plugins", filename)
                 spec = importlib.util.spec_from_file_location(filename[:-3], path)

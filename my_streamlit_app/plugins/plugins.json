@@ -22,5 +22,9 @@
   "Unpack_Bits": {
     "module": "plugins.unpack_bits",
     "class": "Unpack_Bits"
+  },
+  "Write_Bytes": {
+    "module": "plugins.write_bytes",
+    "class": "Write_Bytes"
   }
 }

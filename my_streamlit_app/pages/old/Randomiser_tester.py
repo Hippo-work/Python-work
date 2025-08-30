@@ -14,7 +14,7 @@ def lfsr(seed, taps, n_bits):
 
 seed = [1, 0, 0, 1]
 taps = [0, 3]
-n_bits = st.slider("Number of bits", 10, 100, 32)
+n_bits = st.slider("Number of bits", 10, 100, 10)
 
 output = lfsr(seed, taps, n_bits)
 st.write("Output bitstream:", output)
