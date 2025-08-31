@@ -1,7 +1,15 @@
 {
+  "Bit_Packer": {
+    "module": "plugins.bit_packer",
+    "class": "Bit_Packer"
+  },
   "Matplot_Test": {
     "module": "plugins.matplot_test",
     "class": "Matplot_Test"
+  },
+  "Unpack_Bits": {
+    "module": "plugins.pack_bits",
+    "class": "Unpack_Bits"
   },
   "LFSRRandomizer": {
     "module": "plugins.randomizer",
@@ -18,10 +26,6 @@
   "Truncate_Bits": {
     "module": "plugins.truncate_bits",
     "class": "Truncate_Bits"
-  },
-  "Unpack_Bits": {
-    "module": "plugins.unpack_bits",
-    "class": "Unpack_Bits"
   },
   "Write_Bytes": {
     "module": "plugins.write_bytes",

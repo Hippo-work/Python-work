@@ -32,7 +32,7 @@ class Write_Bytes(Plugin):
             file.write((file))
 
 if __name__ == "__main__":
-    # print(sys.argv)
+    print(f" Write Bytes", sys.argv)
     func = sys.argv[-3]  # e.g. "greet" or "compute"
     file_path_in = sys.argv[-2]  # remaining arguments
     file_path_out = sys.argv[-1]

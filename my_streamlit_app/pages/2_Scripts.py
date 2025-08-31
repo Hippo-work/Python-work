@@ -28,6 +28,7 @@ if "script_dict_df" not in st.session_state:
             data = {
                 "Empty": {
                     "module": "Empty",
+                    "arguments": "Empty",
                 }
             }            
             with open("scripts/scripts.json", "w") as f:
@@ -44,6 +45,7 @@ if "black_script_dict_df" not in st.session_state:
             data = {
                 "Empty": {
                     "module": "Empty",
+                    "arguments": "Empty"
                 }
             }            
             with open("scripts/scripts_blacklist.json", "w") as f:
@@ -52,7 +54,7 @@ if "black_script_dict_df" not in st.session_state:
 
 
 
-tab1, tab2, tab3, tab4 = st.tabs(["List of Scripts", "Loaded Scripts", "Add/Remove", "Blacklist"])
+tab1, tab3, tab4 = st.tabs(["List of Scripts", "Add/Remove", "Blacklist"])
 
 ### Page 1
 with tab1:
@@ -79,49 +81,51 @@ with tab1:
     st.dataframe(combined_df, use_container_width=True)
 
 
-with tab2:
-    from scripts.script_base import Script
-
+with tab3:
     def load_script():
-        # scripts = []
-        save_to_json = {}
-
-        #check blacklist
+        current_list = st.session_state.script_dict_df
         blacklist_path = "scripts/scripts_blacklist.json"
+        existing_path = "scripts/scripts.json"
+
+        # Load existing scripts.json if it exists
+        if os.path.exists(existing_path):
+            with open(existing_path, "r") as f:
+                save_to_json = json.load(f)
+        else:
+            save_to_json = {}
+
+        # Load blacklist
         if os.path.exists(blacklist_path):
             with open(blacklist_path, "r") as f:
                 blacklist_dict = json.load(f)
                 blacklist = set(blacklist_dict.keys())
-        
         else:
             blacklist = set()
 
+        # Scan for new scripts
         for filename in os.listdir("scripts"):
             if filename.endswith(".sh"):
+                script_name = filename[:-3]
                 path = os.path.join("scripts", filename)
-                script_name = filename[:-3]  # Strip '.sh' extension
-                if script_name in blacklist:
+
+                if script_name in blacklist or script_name in current_list:
                     continue
 
-                save_to_json[script_name] = {
-                    "module": path
-                }
+                if script_name not in save_to_json:
+                    save_to_json[script_name] = {
+                        "module": path,
+                        "arguments": "Empty"
+                    }
 
-        with open("scripts/scripts.json", "w") as f:
+        # Save updated dictionary
+        with open(existing_path, "w") as f:
             json.dump(save_to_json, f, indent=2)
-
-        return 
 
 
     scripts = load_script()
-    # for script in scripts:
-    #     with st.expander(f"{script.icon} {script.name}"):
-    #         st.write("Category: ", script.category)
-    #         script.render(st.session_state)
-
 
 ### Page 3
-with tab3:
+# with tab3:
     st.subheader("Add / Remove from List")
     # page code here
 
@@ -129,12 +133,13 @@ with tab3:
     st.subheader("➕ Add or Edit Entry")
     new_script = st.text_input("New Script Name", key="new_script")
     new_module = st.text_input("New Module", key="new_module")
+    new_arguments = st.text_input("New Arguments", key="new_arguments")
 
     #button press
     if st.button("Add Entry"):
         if new_script and new_module:
             #add to data
-            new_row = pd.DataFrame([[new_script, new_module]], columns=["Scripts", "Module"])
+            new_row = pd.DataFrame([[new_script, new_module, new_arguments]], columns=["Scripts", "Module", "Arguments"])
             st.session_state.script_dict_df = pd.concat([st.session_state.script_dict_df, new_row], ignore_index=True)
             save_script_json(st.session_state.script_dict_df)
 

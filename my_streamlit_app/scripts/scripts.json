@@ -1,5 +1,13 @@
 {
+  "repack": {
+    "module": "scripts\\repack.sh",
+    "arguments": "abc"
+  },
   "truncate": {
-    "module": "scripts\\truncate.sh"
+    "module": "scripts\\truncate.sh",
+    "arguments": {
+      "start": "8",
+      "stop": "16"
+    }
   }
 }

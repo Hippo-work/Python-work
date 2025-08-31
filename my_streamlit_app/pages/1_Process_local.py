@@ -34,17 +34,24 @@ if uploaded_file is not None:
         available_scripts = json.load(f)
         full_script = set(available_scripts)
     #select script to use
-    picked_script = st.selectbox("Choose Script to Run:", available_scripts)
-    
-    #get args
-    arg1 = st.text_input("Arg1:")
-    arg2 = st.text_input("Arg2:")
+    st.session_state.picked_script = st.selectbox("Choose Script to Run:", available_scripts)
 
-    if st.button("Run Bash Script") and arg1 and arg2:
-        script_entry = available_scripts[picked_script]
+
+    st.session_state.arg_entry = available_scripts[st.session_state.picked_script]
+    st.write(st.session_state.arg_entry["arguments"])
+    args = ""
+    for arg_key, arg_value in st.session_state.arg_entry["arguments"].items():
+        st.write(arg_key, arg_value)
+        args += (arg_value + " ") 
+    
+    if st.button("Run Bash Script"): # and arg1 and arg2:
+        script_entry = available_scripts[st.session_state.picked_script]
         raw_path = script_entry["module"]  # e.g. "scripts/test.sh"
         script_path = str(Path(raw_path).as_posix())
         st.write(script_path)
+        
+        # arg1 = arg_entry["arguments"]["stop"]
+        
 
         temp_proc_path = "downloads/tmp.bit"
         output_path = "downloads/out.bit"
@@ -52,13 +59,10 @@ if uploaded_file is not None:
         try:
             result = subprocess.run(
                 ["C:/Program Files/Git/bin/bash.exe", 
-                 script_path,
-                 temp_path, 
-                 str(arg1),
-                 str(arg2),
-                 temp_proc_path,
-                 output_path,
-                 ],
+                script_path,
+                temp_path, 
+                str(args),
+                ],
                 capture_output=True,
                 text=True,
                 check=True
@@ -68,5 +72,5 @@ if uploaded_file is not None:
         except subprocess.CalledProcessError as e:
             st.error("Script failed:")
             st.code(e.stderr, language="bash")
-    # os.remove(temp_path)
+    os.remove(temp_path)
             

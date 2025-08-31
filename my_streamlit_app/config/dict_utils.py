@@ -55,16 +55,17 @@ def load_script_json(SCRIPT_FILE="scripts/scripts.json"):
             data = json.load(f)
         df = pd.DataFrame.from_dict(data, orient="index")
         df.reset_index(inplace=True)
-        df.columns = ["Scripts", "Module"]
+        df.columns = ["Scripts", "Module", "Arguments"]
         return df
         # return pd.DataFrame(list(data.items()), columns=["Key", "Value"])
     else:
-        return pd.DataFrame(columns=["Scripts", "Module"])
+        return pd.DataFrame(columns=["Scripts", "Module", "Arguments"])
 
 def save_script_json(df, filepath=SCRIPT_FILE):
     data = {
         row["Scripts"]: {
             "module": row["Module"],
+            "arguments": row["Arguments"]
         }
         for _, row in df.iterrows()
     }
@@ -79,6 +80,7 @@ def append_script_json(df, filepath=SCRIPT_FILE):
     data = {
         row["Scripts"]: {
             "module": row["Module"],
+            "arguments": "Empty"
         }
         for _, row in df.iterrows()
     }

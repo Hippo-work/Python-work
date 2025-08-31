@@ -31,7 +31,7 @@ class Truncate_Bits(Plugin):
         return truncated
     
 if __name__ == "__main__":
-    print(sys.argv)
+    print(f" Truncate bits", sys.argv)
     func = sys.argv[-5] 
     file_path = sys.argv[-4]
 
@@ -43,7 +43,7 @@ if __name__ == "__main__":
     stop = int(sys.argv[-2])
     file_path_out = sys.argv[-1]
 
-    result = Truncate_Bits.truncate(buffers,start,stop)
+    result = Truncate_Bits.truncate(buffers,start,stop=None)
     # file_path_out = "../test/tmp.bit"
     with open(file_path_out, "wb") as f_out:
          f_out.write(result)
