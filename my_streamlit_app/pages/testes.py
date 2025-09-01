@@ -43,6 +43,7 @@ def discover_plugins(directory):
     return registry
 
 scripts = discover_plugins("scripts")
+
 for script in scripts:
     with st.expander(f"{script}"):
         st.write(scripts[script])

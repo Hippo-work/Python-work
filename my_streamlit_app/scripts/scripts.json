@@ -1,7 +1,9 @@
 {
   "repack": {
     "module": "scripts\\repack.sh",
-    "arguments": "abc"
+    "arguments": {
+      "input": "None"
+    }
   },
   "truncate": {
     "module": "scripts\\truncate.sh",
@@ -9,5 +11,13 @@
       "start": "8",
       "stop": "16"
     }
+  },
+  "edited_repack": {
+    "module": "scripts\\edited_repack.sh",
+    "arguments": "Empty"
+  },
+  "script_template": {
+    "module": "scripts\\script_template.sh",
+    "arguments": "Empty"
   }
 }
