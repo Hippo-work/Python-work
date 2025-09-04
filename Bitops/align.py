@@ -1,54 +1,57 @@
 import re
 
-def left_align_hexbin_string_to_bytearray(value_str: str) -> bytearray:
-    """
-    Takes a string 
-    representing an integer in hex (0x...), binary (0b...), or decimal(weird),
-    and returns a bytearray
-    With left-aligned bits (right-padded if needed).
-    
-    Example:
-        '0xFFF' -> b'\xff\xf0'
-        '0b1010' -> b'\xa0'
-        '255' -> b'\xff'
-    """
-    value_str = value_str.strip().lower() #takes away start spaces, and puts text lowercase
+import re
 
+def left_align_hexbin_string_to_bytearray(value_str: str, verbose: bool = False) -> bytearray:
+    """
+    Converts a string representing a hex (0x...), binary (0b...), or decimal value
+    into a left-aligned bytearray (right-padded with zeros if needed).
     
-    # Check for hex (e.g., 0x1A or 0X1A)
-    is_hex = re.fullmatch(r"0[xX][0-9a-fA-F]+", value_str) is not None
-    # print(is_hex)
+    Examples:
+        '0xFFF'   -> bytearray(b'\xff\xf0')
+        '0b1010'  -> bytearray(b'\xa0')
+        '255'     -> bytearray(b'\xff')
+    """
+    value_str = value_str.strip().lower()
 
-    # Check for binary (e.g., 0b1010 or 0B1010)
-    is_bin = re.fullmatch(r"0[bB][01]+", value_str) is not None
-    # print(is_bin)
+    if verbose:
+        print(f"Input string: {value_str}")
 
     # HEX MODE
-    if is_hex == True:
-        if value_str.startswith('0x'):
-            hex_str = value_str[2:]  # Remove '0x'
-            # Pad to full bytes (2 hex digits per byte)
-            if len(hex_str) % 2 != 0:
-                hex_str += '0'
-            return bytearray.fromhex(hex_str)
+    if re.fullmatch(r"0x[0-9a-f]+", value_str):
+        hex_str = value_str[2:]
+        if len(hex_str) % 2 != 0:
+            hex_str += '0'
+            if verbose:
+                print(f"Padded hex string: {hex_str}")
+        return bytearray.fromhex(hex_str)
 
     # BIN MODE
-    elif is_bin == True:
-        if value_str.startswith('0b'):
-            bin_str = value_str[2:]
-            #pad to byte boundary
-            if len(bin_str) % 8 != 0:
-                bin_str += '0' * (8 - len(bin_str) % 8)
-            return bytearray(int(bin_str, 2).to_bytes(len(bin_str) // 8, 'big'))
+    elif re.fullmatch(r"0b[01]+", value_str):
+        bin_str = value_str[2:]
+        pad_len = (8 - len(bin_str) % 8) % 8
+        bin_str += '0' * pad_len
+        if verbose:
+            print(f"Padded binary string: {bin_str}")
+        return int(bin_str, 2).to_bytes(len(bin_str) // 8, 'big')
 
-    # DECIMAL MODE (assume binary-style padding)
-    else:
-        print("\n---Decimal or Error, will give funky results or break---\n")
-        value = int(value_str, 10)
+    # DECIMAL MODE
+    elif re.fullmatch(r"\d+", value_str):
+        value = int(value_str)
         bin_str = bin(value)[2:]
-        if len(bin_str) % 8 != 0:
-            bin_str += '0' * (8 - len(bin_str) % 8)
-        return bytearray(int(bin_str, 2).to_bytes(len(bin_str) // 8, 'big'))
+        pad_len = (8 - len(bin_str) % 8) % 8
+        bin_str += '0' * pad_len
+        if verbose:
+            print(f"Decimal converted to padded binary: {bin_str}")
+        return int(bin_str, 2).to_bytes(len(bin_str) // 8, 'big')
+
+    else:
+        raise ValueError(f"Unrecognized format: {value_str}")
 
 if __name__ == "__main__":
-    print(left_align_hexbin_string_to_bytearray(input("\nEnter in format 0xHex or 0bBinary: ")))   # b'\xff\xf0'
+    # print(left_align_hexbin_string_to_bytearray(input("\nEnter in format 0xHex or 0bBinary: ")))   # b'\xff\xf0'
+    print(left_align_hexbin_string_to_bytearray("0b101"))
+
+
+###how about i just convert it straight to a list, then it shouldnt have to bytebound it
+    
