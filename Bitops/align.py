@@ -1,7 +1,4 @@
 import re
-
-import re
-
 def left_align_hexbin_string_to_bytearray(value_str: str, verbose: bool = False) -> bytearray:
     """
     Converts a string representing a hex (0x...), binary (0b...), or decimal value
