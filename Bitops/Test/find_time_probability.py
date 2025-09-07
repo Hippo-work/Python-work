@@ -11,7 +11,7 @@ def print_array_in_lines(arr, per_line=10):
 #try different rando
 rng = np.random.default_rng()
 data_in = rng.integers(0,2, size= 1000000, dtype=np.uint8)
-
+#inject patterns
 
 
 # data_in = np.random.randint(0,2,size=10000000)

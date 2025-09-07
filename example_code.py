@@ -75,3 +75,9 @@ matrix = [
 ]
 flat = [item for row in matrix for item in row]
 # [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+
+from itertools import batched
+data = [1,2,3,4,5,6]
+batch = batched(data, 2)
+print(list(batch))
+###this groups arrays into a batch size of 2

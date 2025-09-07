@@ -2,13 +2,28 @@ import time
 import numpy as np
 from numba import njit
 import json
+from statistics import median
 
 with open("Bitops/binary_dict.json", "r") as f_in:
     pattern_dict = json.load(f_in)
 
-data_in = np.random.randint(0,2,size=20000)
-# data_in[500:507] = [1,0,1,0,1,0,1]
-# data_in[200:218] = [1,0,0,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0]
+data_in = np.random.randint(0,2,size=100000)
+#inject a pattern with FW of 100
+data_in[0:43] = [1,0,1,1,1,1,1,1,0,0,0,0,1,0,1,0,1,1,1,0,1,1,0,1,0,0,0,0,0,1,0,1,0,0,1,1,1,1,1,1,1,0,0]
+data_in[100:143] = [1,0,1,1,1,1,1,1,0,0,0,0,1,0,1,0,1,1,1,0,1,1,0,1,0,0,0,0,0,1,0,1,0,0,1,1,1,1,1,1,1,0,0]
+data_in[200:243] = [1,0,1,1,1,1,1,1,0,0,0,0,1,0,1,0,1,1,1,0,1,1,0,1,0,0,0,0,0,1,0,1,0,0,1,1,1,1,1,1,1,0,0]
+data_in[300:343] = [1,0,1,1,1,1,1,1,0,0,0,0,1,0,1,0,1,1,1,0,1,1,0,1,0,0,0,0,0,1,0,1,0,0,1,1,1,1,1,1,1,0,0]
+data_in[400:443] = [1,0,1,1,1,1,1,1,0,0,0,0,1,0,1,0,1,1,1,0,1,1,0,1,0,0,0,0,0,1,0,1,0,0,1,1,1,1,1,1,1,0,0]
+data_in[500:543] = [1,0,1,1,1,1,1,1,0,0,0,0,1,0,1,0,1,1,1,0,1,1,0,1,0,0,0,0,0,1,0,1,0,0,1,1,1,1,1,1,1,0,0] 
+data_in[600:643] = [1,0,1,1,1,1,1,1,0,0,0,0,1,0,1,0,1,1,1,0,1,1,0,1,0,0,0,0,0,1,0,1,0,0,1,1,1,1,1,1,1,0,0] 
+data_in[700:743] = [1,0,1,1,1,1,1,1,0,0,0,0,1,0,1,0,1,1,1,0,1,1,0,1,0,0,0,0,0,1,0,1,0,0,1,1,1,1,1,1,1,0,0] 
+data_in[800:843] = [1,0,1,1,1,1,1,1,0,0,0,0,1,0,1,0,1,1,1,0,1,1,0,1,0,0,0,0,0,1,0,1,0,0,1,1,1,1,1,1,1,0,0] 
+data_in[900:943] = [1,0,1,1,1,1,1,1,0,0,0,0,1,0,1,0,1,1,1,0,1,1,0,1,0,0,0,0,0,1,0,1,0,0,1,1,1,1,1,1,1,0,0] 
+#second pattern with a FW of 500
+data_in[50:92] = [1,0,1,0,1,1,1,1,0,0,0,1,0,1,1,1,0,0,0,1,0,0,1,1,0,1,1,0,1,0,1,0,0,0,0,0,0,1,0,1,0,1]
+data_in[550:592] = [1,0,1,0,1,1,1,1,0,0,0,1,0,1,1,1,0,0,0,1,0,0,1,1,0,1,1,0,1,0,1,0,0,0,0,0,0,1,0,1,0,1]
+
+
 @njit
 def convolute_pattern(data, pattern):
     """
@@ -78,7 +93,11 @@ def probability(found_dict, length_of_data:int):
             pattern = values[v]["pattern"]                  #array of pattern that matched
             length_of_pattern = len(values[v]["pattern"])   #length of pattern
             actual_match_count = int(values[v]["count"])    #how many times it matched
-            values[v]["matches"]                            #the index where it matched
+            to_deltas = values[v]["matches"]
+            if len(to_deltas) > 1:                #the index where it matched
+                deltas = np.diff(to_deltas)
+                FW_guess = median(deltas)
+                print("     Frame Width guess:          ", int(FW_guess))                     #the deltas between the indices    
             total_windows = length_of_data - length_of_pattern + 1
             emp_prob = (actual_match_count / total_windows)
             theo_prob = theoretical_probability(pattern)
@@ -86,18 +105,18 @@ def probability(found_dict, length_of_data:int):
             print("     Pattern Found Count:        ", actual_match_count)
             print("     Random Data expected Count: ", int(theo_prob * length_of_data))
             print("     Z-score:                    ", z)
-            if z > 10.0:
-                very_high_probability_result.append(key)
-            if z > 4.0 or z < -4.0:
-                high_probability_result.append(key)
-            elif -2.0 < z < 2.0:
-                continue
+            if -5.0 > z > 5.0:
+                if -50.0 > z > 50.0:
+                    very_high_probability_result.append(key)
+                else:
+                    high_probability_result.append(key)
             else:
                 low_probability_result.append(key)
     return low_probability_result, high_probability_result, very_high_probability_result
 
-def runner(log=False):
-    found_dict = find_pattern(data_in,pattern_dict, True)
+
+def runner(log=False, verbose=False):
+    found_dict = find_pattern(data_in,pattern_dict, verbose)
     low_prob, high_prob, very_high_prob = probability(found_dict, len(data_in))
     if log:
         with open("Bitops/Test/find.log", "w") as f_out:
@@ -105,13 +124,13 @@ def runner(log=False):
     return low_prob, high_prob, very_high_prob
 
 start_time = time.time()
-low_prob, high_prob, very_high_prob = runner(True)
+low_prob, high_prob, very_high_prob = runner(log=False, verbose=False)
 end_time = time.time()
 print(f"Time taken: {end_time - start_time}")
 
 
 if low_prob:
-    print(f"\nLow Probability matches: {low_prob}\n")
+    print(f"\nLow Probability matches: {low_prob[:10]}... check log for more\n")
 if high_prob:
     print(f"\nHigh Probability matches: {high_prob}\n")
 if very_high_prob:
