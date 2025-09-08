@@ -4,6 +4,8 @@ from numba import njit
 import json
 from statistics import median
 from multiprocessing import Pool, cpu_count
+from scipy.stats import norm
+from statsmodels.stats.multitest import multipletests
 
 def load_patterns(file_patterns="Bitops/dict_pattern.json", file_fw="Bitops/dict_fw.json"):
     with open(file_patterns, "r") as f_in:
@@ -34,22 +36,28 @@ def load_data(file_path, size=50000):
     return data_in
 
 @njit
-def convolute_pattern(data, pattern):
-    """
-    Finds exact matches of a binary pattern in a binary stream using convolution.
-    Returns indices where the pattern aligns perfectly.
-    """
+def sliding_window_pattern(data, pattern):
     pattern_len = len(pattern)
     pattern_sum = np.sum(pattern)
-    # Convolve without reversing the pattern
-    conv_scores = np.convolve(data, pattern, mode='valid')
-    # Find indices where the score equals the pattern sum
+    threshold = 0.9
     match_indices = []
-    for i, score in enumerate(conv_scores):
+    for i, j in enumerate(data):
         segment = data[i:i+pattern_len]
+        segment_sum = np.sum(segment)
         if np.array_equal(segment, pattern): # full match
             match_indices.append(i)
         elif np.array_equal(segment, 1 - pattern): #flipped compliment (inverted)
+            match_indices.append(i)
+    return match_indices
+
+@njit
+def sliding_window_hamming(data, pattern, max_mismatches=1):
+    pattern_len = len(pattern)
+    match_indices = []
+    for i in range(len(data) - pattern_len + 1):
+        segment = data[i:i+pattern_len]
+        mismatches = np.sum(segment != pattern)
+        if mismatches <= max_mismatches:
             match_indices.append(i)
     return match_indices
 
@@ -61,7 +69,7 @@ def find_pattern_worker(args):
     for array in arrays:
         extracted_pattern = [int(bit) for bit in array]
         pattern_np = np.array(extracted_pattern)
-        find_pat = convolute_pattern(data, pattern_np)
+        find_pat = sliding_window_hamming(data, pattern_np)
         if find_pat:
             count = len(find_pat)
             if verbose:
@@ -100,60 +108,80 @@ def theoretical_probability(pattern, p: float = 0.5) -> float:
     return theo_prob
 
 def z_score_count(observed_count, expected_prob, total_trials):
-    #actual match ount, theoretical probability, length of data - length of pattern +1
     expected_count = expected_prob * total_trials
     std_dev = np.sqrt(expected_prob * (1 - expected_prob) * total_trials)
+    if std_dev == 0:
+        return 0
     return (observed_count - expected_count) / std_dev
 
-def probability(found_dict, fw_dict, length_of_data:int, verbose: bool= False):
+def p_value_from_z(z):
+    # Two-sided p-value from  z-score
+    return 2 * (1 - norm .cdf(abs(z)))
+
+def probability (found_dict, fw_dict, length_of_data:int, verbose: bool= False):
     low_probability_result = []
     high_probability_result = []
     very_high_probability_result = []
     winner_result = []
-    for key, values in found_dict.items():
-        for v in range(len(values)):
+    p_values = []
+    all_results = []
+
+    # First pass: collect all  z-scores and p-values
+    for key,  values in found_dict.items():
+        for v  in range(len(values)):
             FW_guess = 0
-            pattern = values[v]["pattern"]                  #array of pattern that matched
-            length_of_pattern = len(values[v]["pattern"])   #length of pattern
-            actual_match_count = int(values[v]["count"])    #how many times it matched
-            to_deltas = values[v]["matches"]                #the index where it matched
-            if len(to_deltas) > 1:                
-                    deltas = np.diff(to_deltas)
-                    FW_guess = int(median(deltas))
+            pattern = values[v]["pattern"]
+            length_of_pattern = len(values[v]["pattern"])
+            actual_match_count = int(values[v]["count"])
+            to_deltas = values[v]["matches"]
+            if len(to_deltas) > 1:
+                deltas = np.diff(to_deltas)
+                FW_guess = int(median(deltas))
             total_windows = length_of_data - length_of_pattern + 1
             emp_prob = (actual_match_count / total_windows)
             theo_prob = theoretical_probability(pattern)
             z_score = z_score_count(actual_match_count, theo_prob, total_windows)
-            if verbose:
-                print(key)
-                print("     Frame Width guess:          ", int(FW_guess)) #the deltas between the indices  
-                print("     Pattern Found Count:        ", actual_match_count)
-                print("     Random Data expected Count: ", int(theo_prob * length_of_data))
-                print("     Z-score:                    ", z_score)
-                print("     Database FW Options:         ", fw_dict.get(key, []))
-            if z_score >= 5.0 or z_score <= -5.0:
-                loop_break = False
-                if z_score >= 50.0 or z_score <= -50.0:
-                    if FW_guess > 0:
-                        for fw in fw_dict.get(key, []):
-                            if FW_guess and abs(FW_guess - fw) / fw <= 0.1: #within 10%
-                                FW_guess = fw
-                                winner_result.append([key,"FW guess: "+str(FW_guess if FW_guess else 0),"Match count: "+str(actual_match_count),"Z-Score: " + str(z_score),"Match Locations: "+ str(to_deltas)])
-                                loop_break = True
-                                break
-                        else:
-                            very_high_probability_result.append([key,"FW guess: "+str(FW_guess if FW_guess else 0),"Match count: "+str(actual_match_count),"Z-Score: " + str(z_score),"Match Locations: "+ str(to_deltas)])
+            p_val = p_value_from_z(z_score)
+            p_values.append(p_val)
+            all_results.append((key, values[v], FW_guess, z_score, p_val, to_deltas))
+
+    # Multiple hypothesis correction (Benjamini-Hochberg FDR)
+    reject, pvals_corrected, _, _ = multipletests(p_values, alpha=0.001, method='fdr_bh')
+
+    # Second pass: assign results based on corrected p-values
+    for idx, (key, value, FW_guess, z_score, p_val, to_deltas) in enumerate(all_results):
+        pval_corr = pvals_corrected[idx]
+        if verbose:
+            print(key)
+            print("     Frame Width guess:          ", int(FW_guess))
+            print("     Pattern Found Count:        ", int(value["count"]))
+            print("     Random Data expected Count: ", int(theoretical_probability(value["pattern"]) * length_of_data))
+            print("      Z-score:                    ", z_score)
+            print("      p-value (raw):              ", p_val) 
+            print("     p-value (corrected):        ", pval_corr)
+            print("     Database FW Options:        ", fw_dict.get(key, []))
+        if pval_corr < 0.01:
+            loop_break = False
+            if abs(z_score) >= 50000.0:
+                if FW_guess > 0:
+                    for fw in fw_dict.get(key, []):
+                        if FW_guess and abs(FW_guess - fw) / fw <= 0.1:
+                            FW_guess = fw
+                            winner_result.append([key," FW guess: "+str(FW_guess if FW_guess else 0)," Match count: "+str(value["count"])," Z-Score: " + str(z_score)," p-value: "+str(pval_corr)," Match Locations: "+ str(to_deltas)])
                             loop_break = True
+                            break
                     else:
-                        very_high_probability_result.append([key,"FW guess: "+str(FW_guess if FW_guess else 0),"Match count: "+str(actual_match_count),"Z-Score: " + str(z_score),"Match Locations: "+ str(to_deltas)])
+                        very_high_probability_result.append([key," FW guess: "+str(FW_guess if FW_guess else 0)," Match count: "+str(value["count"])," Z-Score: " + str(z_score)," p-value: "+str(pval_corr)," Match Locations: "+ str(to_deltas)])
                         loop_break = True
-                if loop_break:
-                    break
                 else:
-                    high_probability_result.append([key,"FW guess: "+str(FW_guess if FW_guess else 0),"Match count: "+str(actual_match_count),"Z-Score: " + str(z_score),"Match Locations: "+ str(to_deltas)])
-                    break
+                    very_high_probability_result.append([key," FW guess: "+str(FW_guess if FW_guess else 0)," Match count: "+str(value["count"])," Z-Score: " + str(z_score)," p-value: "+str(pval_corr)," Match Locations: "+ str(to_deltas)])
+                    loop_break = True
+            if loop_break:
+                continue
             else:
-                low_probability_result.append([key, "Match count: "+str(actual_match_count)])
+                high_probability_result.append([key," FW guess: "+str(FW_guess if FW_guess else 0)," Match count: "+str(value["count"])," Z-Score: " + str(z_score)," p-value: "+str(pval_corr)," Match Locations: "+ str(to_deltas)])
+        else:
+            low_probability_result.append([key, "Match count: "+str(value["count"]), "p-value: "+str(pval_corr)])
     return low_probability_result, high_probability_result, very_high_probability_result, winner_result
 
 def runner(data_in,log=False, verbose=False):
@@ -184,7 +212,7 @@ if __name__ == "__main__":
     start_time = time.time()
     pattern_dict, fw_dict = load_patterns() #load patterns from json
     data_in = load_data(None,size=10000) #load data from binary file
-    low_prob, high_prob, very_high_prob, winner_prob = runner(data_in, log=True, verbose=False)
+    low_prob, high_prob, very_high_prob, winner_prob = runner(data_in, log=True, verbose=True)
     end_time = time.time()
     print(f"Time taken: {end_time - start_time}")
 
@@ -195,9 +223,9 @@ if __name__ == "__main__":
     if very_high_prob:
         print("\n")
         for item in very_high_prob:
-            print(f"Very High Probability match!: {item}")
+            print(f"Very High Probability match!: {item[0] + item [1] + item[2] + item[3] + item[4]}")
     if winner_prob:
         print("\n")
         for item in winner_prob:
-            print(f"We have a winner!: {item}")
+            print(f"We have a winner!: {item[0] + item [1] + item[2] + item[3] + item[4]}")
     print("\nFinished\n")
