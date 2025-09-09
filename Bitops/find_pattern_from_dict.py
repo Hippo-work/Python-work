@@ -61,15 +61,46 @@ def sliding_window_hamming(data, pattern, max_mismatches=1):
             match_indices.append(i)
     return match_indices
 
+# @njit
+def define_patterns(pattern):
+    normal_pattern = np.array(pattern, dtype="uint8")
+    inverted_pattern = np.array(1 - normal_pattern, dtype="uint8")
+    reverse_eight_pattern = []
+    for i in range(0, len(pattern), 8):
+        byte = pattern[i:i+8]
+        reversed_byte = byte[::-1]
+        reverse_eight_pattern.extend(reversed_byte)
+    reverse_eight_pattern = np.array(reverse_eight_pattern, dtype="uint8")
+    return normal_pattern, inverted_pattern, reverse_eight_pattern
+
+@njit
+def bitwise_find(data, norm_pattern, inv_pattern, r8_pattern, threshold=0):
+    pattern_len = len(norm_pattern)
+    matches = []
+    window_total = len(data) - pattern_len + 1
+
+    for i in range(window_total):
+        segment = data[i:i+pattern_len]
+        xor = np.bitwise_xor(segment, norm_pattern)
+        xor_invert = np.bitwise_xor(segment, inv_pattern)
+        xor_r8 = np.bitwise_xor(segment, r8_pattern)
+        score = np.sum(xor)  # or use np.count_nonzero(xor) for Hamming distance
+        score_invert = np.sum(xor_invert)
+        score_r8 = np.sum(xor_r8)
+        score = min(score, score_invert, score_r8)
+        if score <= threshold:
+            matches.append(i)
+    return matches
+
 def find_pattern_worker(args):
-    data, dicto, arrays, verbose = args
+    data, dicto, arrays, threshold, verbose = args
     found = {}
     if verbose:
         print(f"Searching for {dicto}")
     for array in arrays:
         extracted_pattern = [int(bit) for bit in array]
-        pattern_np = np.array(extracted_pattern)
-        find_pat = sliding_window_hamming(data, pattern_np)
+        pattern_np, inv_pattern_np, r8_pattern_np = define_patterns(extracted_pattern)
+        find_pat = bitwise_find(data, pattern_np, inv_pattern_np, r8_pattern_np, threshold)
         if find_pat:
             count = len(find_pat)
             if verbose:
@@ -83,9 +114,9 @@ def find_pattern_worker(args):
             })
     return found
 
-def find_pattern(data, pattern_dict, verbose: bool=False):
+def find_pattern(data, pattern_dict, threshold, verbose: bool=False):
     found = {}
-    args_list = [(data, dicto, arrays, verbose) for dicto, arrays in pattern_dict.items()]
+    args_list = [(data, dicto, arrays, threshold, verbose) for dicto, arrays in pattern_dict.items()]
     with Pool(cpu_count() -1) as pool:
         results = pool.map(find_pattern_worker, args_list)
     for result in results:
@@ -160,33 +191,50 @@ def probability (found_dict, fw_dict, length_of_data:int, verbose: bool= False):
             print("      p-value (raw):              ", p_val) 
             print("     p-value (corrected):        ", pval_corr)
             print("     Database FW Options:        ", fw_dict.get(key, []))
-        if pval_corr < 0.01:
-            loop_break = False
-            if abs(z_score) >= 50000.0:
-                if FW_guess > 0:
-                    for fw in fw_dict.get(key, []):
-                        if FW_guess and abs(FW_guess - fw) / fw <= 0.1:
-                            FW_guess = fw
-                            winner_result.append([key," FW guess: "+str(FW_guess if FW_guess else 0)," Match count: "+str(value["count"])," Z-Score: " + str(z_score)," p-value: "+str(pval_corr)," Match Locations: "+ str(to_deltas)])
-                            loop_break = True
-                            break
-                    else:
-                        very_high_probability_result.append([key," FW guess: "+str(FW_guess if FW_guess else 0)," Match count: "+str(value["count"])," Z-Score: " + str(z_score)," p-value: "+str(pval_corr)," Match Locations: "+ str(to_deltas)])
-                        loop_break = True
-                else:
-                    very_high_probability_result.append([key," FW guess: "+str(FW_guess if FW_guess else 0)," Match count: "+str(value["count"])," Z-Score: " + str(z_score)," p-value: "+str(pval_corr)," Match Locations: "+ str(to_deltas)])
-                    loop_break = True
-            if loop_break:
-                continue
-            else:
-                high_probability_result.append([key," FW guess: "+str(FW_guess if FW_guess else 0)," Match count: "+str(value["count"])," Z-Score: " + str(z_score)," p-value: "+str(pval_corr)," Match Locations: "+ str(to_deltas)])
-        else:
-            low_probability_result.append([key, "Match count: "+str(value["count"]), "p-value: "+str(pval_corr)])
+        
+        # Normalize FW_guess if it's close to any fw in fw_dict[key]
+        matched_fw = None
+        if FW_guess > 0:
+            for fw in fw_dict.get(key, []):
+                if abs(FW_guess - fw) / fw <= 0.1:
+                    matched_fw = fw
+                    break
+
+        # Assign to appropriate result bucket
+        if matched_fw is not None and abs(z_score) > 10000.0:
+            winner_result.append([
+                key,
+                f" FW matched!!: {matched_fw}",
+                f" Match count: {value['count']}",
+                f" Z-Score: {z_score}",
+                f" Match Locations: {to_deltas}"
+            ])
+        elif abs(z_score) > 100000.0:
+            very_high_probability_result.append([
+                key,
+                f" FW guess: {FW_guess if FW_guess else 0}",
+                f" Match count: {value['count']}",
+                f" Z-Score!!: {z_score}",
+                f" Match Locations: {to_deltas}"
+            ])
+        elif abs(z_score) > 1000.0:  # You can adjust this threshold if needed
+            high_probability_result.append([
+                key,
+                f" FW guess: {FW_guess if FW_guess else 0}",
+                f" Match count: {value['count']}",
+                f" Z-Score: {z_score}",
+                f" Match Locations: {to_deltas}"
+            ])
+        # else:
+        #     low_probability_result.append([
+        #         key,
+        #         f" Match count: {value['count']}",
+        #     ] )
     return low_probability_result, high_probability_result, very_high_probability_result, winner_result
 
-def runner(data_in,log=False, verbose=False):
+def runner(data_in,log=False, threshold=0, verbose=False):
     data_in = data_in[:50000] #trim data for speed
-    found_dict = find_pattern(data_in,pattern_dict, verbose) #search for patterns, save as dict
+    found_dict = find_pattern(data_in,pattern_dict, threshold, verbose) #search for patterns, save as dict
     low_prob, high_prob, very_high_prob, winner_prob = probability(found_dict, fw_dict, len(data_in), verbose) #prob analysis
     if log: #output log file
         with open("Bitops/Test/find.log", "w") as f_out:
@@ -212,10 +260,8 @@ if __name__ == "__main__":
     start_time = time.time()
     pattern_dict, fw_dict = load_patterns() #load patterns from json
     data_in = load_data(None,size=10000) #load data from binary file
-    low_prob, high_prob, very_high_prob, winner_prob = runner(data_in, log=True, verbose=True)
-    end_time = time.time()
-    print(f"Time taken: {end_time - start_time}")
-
+    low_prob, high_prob, very_high_prob, winner_prob = runner(data_in, log=True, threshold=1, verbose=False)
+    
     if low_prob:
         print(f"\nLow Probability matches: {[match[0] for match in low_prob[:5]]}\n...compressed list. Check find.log for more\n")
     if high_prob:
@@ -223,9 +269,12 @@ if __name__ == "__main__":
     if very_high_prob:
         print("\n")
         for item in very_high_prob:
-            print(f"Very High Probability match!: {item[0] + item [1] + item[2] + item[3] + item[4]}")
+            print(f"Very High Probability match!: {item[0] + item [1] + item[2] + item[3]}")
     if winner_prob:
         print("\n")
         for item in winner_prob:
-            print(f"We have a winner!: {item[0] + item [1] + item[2] + item[3] + item[4]}")
+            print(f"We have a winner!: {item[0] + item [1] + item[2] + item[3]}")
     print("\nFinished\n")
+    
+    end_time = time.time()
+    print(f"Time taken: {end_time - start_time}")
