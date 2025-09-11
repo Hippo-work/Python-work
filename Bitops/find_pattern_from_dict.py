@@ -1,3 +1,4 @@
+from functools import lru_cache
 import time
 import numpy as np
 from numba import njit
@@ -6,14 +7,16 @@ from statistics import median
 from multiprocessing import Pool, cpu_count
 from scipy.stats import norm
 from statsmodels.stats.multitest import multipletests
+import gc
 
+# @lru_cache(maxsize=4096)
 def load_patterns(file_patterns="Bitops/dict_pattern.json", file_fw="Bitops/dict_fw.json"):
     with open(file_patterns, "r") as f_in:
         pattern_dict =  json.load(f_in)
     with open(file_fw, "r") as f_in:
         fw_dict = json.load(f_in)
     return pattern_dict, fw_dict
-
+# @lru_cache(maxsize=4096)
 def load_data(file_path, size=50000):
     ### filepath here
     # with open(file_path, "rb") as f_in:
@@ -61,7 +64,6 @@ def sliding_window_hamming(data, pattern, max_mismatches=1):
             match_indices.append(i)
     return match_indices
 
-# @njit
 def define_patterns(pattern):
     normal_pattern = np.array(pattern, dtype="uint8")
     inverted_pattern = np.array(1 - normal_pattern, dtype="uint8")
@@ -235,6 +237,7 @@ def probability (found_dict, fw_dict, length_of_data:int, verbose: bool= False):
 def runner(data_in,log=False, threshold=0, verbose=False):
     data_in = data_in[:50000] #trim data for speed
     found_dict = find_pattern(data_in,pattern_dict, threshold, verbose) #search for patterns, save as dict
+    gc.collect() #garbage collect to free memory
     low_prob, high_prob, very_high_prob, winner_prob = probability(found_dict, fw_dict, len(data_in), verbose) #prob analysis
     if log: #output log file
         with open("Bitops/Test/find.log", "w") as f_out:
@@ -275,6 +278,5 @@ if __name__ == "__main__":
         for item in winner_prob:
             print(f"We have a winner!: {item[0] + item [1] + item[2] + item[3]}")
     print("\nFinished\n")
-    
     end_time = time.time()
     print(f"Time taken: {end_time - start_time}")
