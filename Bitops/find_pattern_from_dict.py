@@ -8,6 +8,7 @@ from multiprocessing import Pool, cpu_count
 from scipy.stats import norm
 from statsmodels.stats.multitest import multipletests
 import gc
+import asyncio
 
 # @lru_cache(maxsize=4096)
 def load_patterns(file_patterns="Bitops/dict_pattern.json", file_fw="Bitops/dict_fw.json"):

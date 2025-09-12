@@ -59,3 +59,4 @@ print(median_delta) #good at eliminating outliers and finding the frame width / 
 pat = [1,0,1,1,0,0,1]
 print(f"pattern {np.array(pat)}")
 print(f"flipped?: {1-np.array(pat)}")
+
