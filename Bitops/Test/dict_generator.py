@@ -1,7 +1,7 @@
 import random
 import json
 
-def generate_binary_dict(num_keys=20000, min_len=5, max_len=50):
+def generate_binary_dict(num_keys=20000, min_len=16, max_len=256):
     return {
         f"key_{i}":[ ''.join(random.choice('01') for _ in range(random.randint(min_len, max_len))) ]
         for i in range(num_keys)
