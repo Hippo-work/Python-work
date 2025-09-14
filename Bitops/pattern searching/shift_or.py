@@ -34,3 +34,4 @@ text = [0, 1, 0, 1, 1, 1, 0, 1]
 pattern = [1, 1, 0]
 print(shift_or_search(text, pattern))
 # Output: indices where pattern matches exactly
+#push test
