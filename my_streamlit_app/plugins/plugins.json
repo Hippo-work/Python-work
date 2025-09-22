@@ -1,0 +1,34 @@
+{
+  "Bit_Packer": {
+    "module": "plugins.bit_packer",
+    "class": "Bit_Packer"
+  },
+  "Matplot_Test": {
+    "module": "plugins.matplot_test",
+    "class": "Matplot_Test"
+  },
+  "Unpack_Bits": {
+    "module": "plugins.pack_bits",
+    "class": "Unpack_Bits"
+  },
+  "LFSRRandomizer": {
+    "module": "plugins.randomizer",
+    "class": "LFSRRandomizer"
+  },
+  "SubPageTest": {
+    "module": "plugins.sub_page_test",
+    "class": "SubPageTest"
+  },
+  "Test_save": {
+    "module": "plugins.test_save",
+    "class": "Test_save"
+  },
+  "Truncate_Bits": {
+    "module": "plugins.truncate_bits",
+    "class": "Truncate_Bits"
+  },
+  "Write_Bytes": {
+    "module": "plugins.write_bytes",
+    "class": "Write_Bytes"
+  }
+}
