@@ -1,7 +1,5 @@
 -- Likely Exact Probability Matches --
-  - ['key_19999', ' FW matched!!: 500', ' Match count: 2', ' Z-Score: 42029.28848947146', ' Match Locations: [50, 550]']
 -- Very High Probability Matches --
-  - ['key_19998', ' FW guess: 100', ' Match count: 9', ' Z-Score!!: 267486.1840700855', ' Match Locations: [0, 200, 300, 400, 500, 600, 700, 800, 900]']
 
 
 -- High Probability Matches --
