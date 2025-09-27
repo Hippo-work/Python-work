@@ -5,8 +5,7 @@ put them into a list array
 can then be searched
 delta function can be applied
 """
-import file_in
-import read_bits
+# import read_bits
 import os
 import sys
 
@@ -24,6 +23,6 @@ def delta_bits(bits):
     return deltas
 
 if __name__ == "__main__":
-    result = delta_bits(read_bits.unpack_bits(file_in.input[0]))
+    result = delta_bits([1,0,0,1,0,1,1,0,0,0,1,0,0,1,0,1])
     print(f"Delta bit list:  {result}")
-    print(f"Delta repacked: {read_bits.pack_bits(result).hex()}")  # Print the hex representation of the packed delta bits
+    # print(f"Delta repacked: {read_bits.pack_bits(result).hex()}")  # Print the hex representation of the packed delta bits

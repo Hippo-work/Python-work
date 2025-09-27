@@ -38,13 +38,13 @@ if __name__ == "__main__":
     data = b"Hello World"  # Original data
 
     # Initialize LFSR with a seed
-    lfsr = LFSR(seed=0b10101010)
+    lfsr = LFSR(seed=0b11111111)
 
     # Randomize
     encrypted = pseudo_randomize(data, lfsr)
     print("Encrypted:", encrypted)
 
     # Reset LFSR to same seed to decrypt
-    lfsr = LFSR(seed=0b10101010)
+    lfsr = LFSR(seed=0b11111111)
     decrypted = pseudo_randomize(encrypted, lfsr)
     print("Decrypted:", decrypted)
