@@ -1,4 +1,4 @@
-'''Apply Taps'''
+
 from functools import reduce
 from operator import ixor
 ### say if the taps are 0,3,5
@@ -25,7 +25,7 @@ def apply_taps(input_data:list, taps:list):
     #size of register
     window_size = len(taps)
     #ends up being the length of the data
-    window_total = len(data) - (window_size) + 1
+    window_total = len(data) - window_size + 1
 
     output_array = []
     for i in range(window_total):

@@ -14,4 +14,3 @@ for start in range(0, len(data), chunk_size):
     chunk = data[start:start+chunk_size]
     output = process_chunk(chunk)
 #Benefit: Vectorization keeps the loop in C‑speed territory
-
